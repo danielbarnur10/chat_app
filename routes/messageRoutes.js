@@ -1,23 +1,20 @@
 const express = require('express');
-const { postMessage,getAllMessages } = require('../controllers/messagesController.js');
+const { authenticateToken } = require('../middlewares/authMiddleware');
+const {
+  getMessagesByUser,
+  sendMessage,
+  getAllMessages,
+} = require('../controllers/messageController');
+
 const router = express.Router();
 
-router.post('/messages', async (req, res) => {
-        try {
-          const messages = await postMessage();
-          res.json(messages);
-        } catch (err) {
-          res.status(500).json({ error: 'Failed to fetch messages' });
-        }
-     });
+// Route to get all messages (admin or testing purposes)
+router.get('/all', authenticateToken, getAllMessages);
 
-router.post('/messages', async (req, res) => {
-        try {
-          const result = await getAllMessages();
-          res.json(result);
-        } catch (err) {
-          console.error(err);
-          res.status(500).json({ error: 'Failed to retrieve messages' });
-        }
-      });
-  module.exports = router;
+// Route to get messages by user
+router.get('/:userId', authenticateToken, getMessagesByUser);
+
+// Route to send a new message
+router.post('/', authenticateToken, sendMessage);
+
+module.exports = router;

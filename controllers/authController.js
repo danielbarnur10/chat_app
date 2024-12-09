@@ -1,25 +1,34 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { generateToken } = require('../utils/jwt');
 const {User} = require('../models');
 
 exports.register = async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ where: { username } });
+    const { username, password, email } = req.body;
 
-    if (!user) {
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Save the user
-    const user = await User.create({ username, passwordHash: hashedPassword });
-    res.status(201).json({ message: 'User registered successfully', user });
+    // Check if all required fields are provided
+    if (!username || !password || !email) {
+      return res.status(400).json({ error: 'Username, password, and email are required' });
     }
-    else
-    res.status(200).json({ error: 'User is already registered',user });
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ where: { username } });
+
+    if (!existingUser) {
+      // Hash the password and create user in a single line
+      const user = await User.create({ 
+        username, 
+        email, 
+        passwordHash: await bcrypt.hash(password, 10)
+      });
+
+      return res.status(201).json({ message: 'User registered successfully', user });
+    } else {
+      return res.status(400).json({ error: 'User is already registered' });
+    }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 };
 
@@ -42,7 +51,7 @@ exports.login = async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = generateToken({ id: user.id, email: user.email });
 
     res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
