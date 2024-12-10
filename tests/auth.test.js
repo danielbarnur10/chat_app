@@ -22,7 +22,4 @@ describe('Auth Tests', () => {
     expect(response.status).toBe(200); // Adjust status code based on your error handling
     expect(response.body).toHaveProperty('error');
   });
-  // afterEach(async () => {
-  //   await sequelize.truncate({ cascade: true }); // Clears all tables
-  // });
 });
