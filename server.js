@@ -2,8 +2,8 @@ const http = require('http');
 const { Server } = require('socket.io');
 const app = require('./app'); 
 const { Message } = require('./models'); // Adjust path as needed
-const PORT = process.env.PORT || 3000;
-
+const PORT = process.env.PORT || 4000;
+ 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
